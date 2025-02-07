@@ -1,0 +1,1 @@
+Devops-specialist course, homework for lesson 13 "Ansible and AWS": Write Ansible playbook that deploys 2 nodes in AWS EC2: assembly and prod. On the assembly node is going the assembly of the Java project, the resulting artifact is transferred to the prod node and launched on it.

@@ -1,0 +1,93 @@
+---
+- name: create EC2 instances
+  hosts: localhost
+  gather_facts: False
+  vars_files:
+    - vars/aws_credentials.yml
+  tasks:
+    - name: creating an assembly node
+      amazon.aws.ec2:
+        aws_access_key: "{{ aws_access_key }}"
+        aws_secret_key: "{{ aws_secret_key }}"
+        region: "{{ region }}"
+        image: ami-07ec4220c92589b40
+        instance_type: t3.micro
+        key_name: rsa
+        count: 1
+        vpc_subnet_id: vpc-05bd88f0708dcf36f
+        assign_public_ip: yes
+        wait: yes
+        instance_tags:
+          Name: assembly_node
+      register: assembly_node
+
+    - name: creating an prod node
+      amazon.aws.ec2:
+        aws_access_key: "{{ aws_access_key }}"
+        aws_secret_key: "{{ aws_secret_key }}"
+        region: "{{ region }}"
+        image: ami-07ec4220c92589b40
+        instance_type: t3.micro
+        key_name: rsa
+        count: 1
+        vpc_subnet_id: vpc-05bd88f0708dcf36f
+        assign_public_ip: yes
+        wait: yes
+        instance_tags:
+          Name: prod_node
+      register: prod_node
+
+- name: building a java project on an assembly node
+  hosts: assembly_node
+  remote_user: ubuntu
+  gather_facts: False
+  tasks:
+    - name: install git
+      apt:
+        name: git
+        state: present
+  
+    - name: install maven
+      apt:
+        name: maven
+        state: present
+
+    - name: install java
+      apt:
+        name: default-jdk
+        state: present
+
+    - name: git clone repo
+      git:
+        repo: 'https://github.com/boxfuse/boxfuse-sample-java-war-hello.git'
+        dest: /home/ubuntu/boxfuse-sample-java-war-hello
+
+    - name: maven package
+      shell:
+        chdir: /home/ubuntu/boxfuse-sample-java-war-hello
+        cmd: mvn package
+
+    - name: copy artcifact to prod node
+      synchronize:
+        src: /home/ubuntu/boxfuse-sample-java-war-hello/hello-1.0.war
+        dest: /var/lib/tomcat9/webapps
+        mode: push
+      delegate_to: assembly_node
+
+- name: launching an artifact on a prod node
+  hosts: prod_node
+  remote_user: ubuntu
+  gather_facts: False
+  tasks:
+    - name: install java
+      apt:
+        name: default-jdk
+        state: present
+
+    - name: install tomcat
+      apt:
+        name: tomcat9
+        state: present
+
+    - name: launch java app
+      command: java -war /var/lib/tomcat9/webapps

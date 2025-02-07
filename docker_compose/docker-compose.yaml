@@ -1,0 +1,20 @@
+---
+version: '3'
+services:
+   package-java-app:
+      build:
+         context: /home/ubuntu/Lesson7
+         dockerfile: Dockerfile
+      volumes:
+         - mydata:/usr/local/tomcat/webapps
+   run-java:
+      image: tomcat:9-jdk11
+      ports:
+         - 8080:8080
+      depends_on:
+         - package-java-app
+      volumes:
+         - mydata:/usr/local/tomcat/webapps
+
+volumes:
+   mydata:

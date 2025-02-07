@@ -1,0 +1,52 @@
+---
+- name: service-builder
+  hosts: builder
+  become: yes
+
+  tasks:
+  - name: install git
+    apt:
+      name: git
+      state: present
+  
+  - name: install maven
+    apt:
+      name: maven
+      state: present
+
+  - name: install java
+    apt:
+      name: default-jdk
+      state: present
+
+  - name: git clone boxfuse
+    git:
+      repo: https://github.com/boxfuse/boxfuse-sample-java-war-hello.git
+      dest: /srv/boxfuse-sample-java-war-hello
+
+  - name: build war-file
+    shell:
+      chdir: /srv/boxfuse-sample-java-war-hello
+      cmd: mvn package
+
+- name: service-prod
+  hosts: prod
+  become: yes
+
+  tasks:
+  - name: install java
+    apt:
+      name: default-jdk
+      state: present
+
+  - name: install tomcat
+    apt:
+      name: tomcat9
+      state: present
+
+  - name: transfer file from builder to prod
+    synchronize:
+      src: /srv/boxfuse-sample-java-war-hello/target/hello-1.0.war
+      dest: /var/lib/tomcat9/webapps
+      mode: push
+    delegate_to: 212.233.120.125
