@@ -1,0 +1,16 @@
+---
+- name: build server configuring
+  hosts: builder
+  become: yes
+
+  roles: 
+    - provisioning
+    - building
+
+- name: prod server configuring
+  hosts: prod
+  become: yes
+
+  roles: 
+    - provisioning
+    - launching   

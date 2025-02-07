@@ -1,0 +1,10 @@
+---
+- name: git clone boxfuse
+  git:
+    repo: "{{ repository }}"
+    dest: "{{ dest_folder }}"
+
+- name: build war-file
+  shell:
+    chdir: "{{ dest_folder }}"
+    cmd: mvn package

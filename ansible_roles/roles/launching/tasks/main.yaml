@@ -1,0 +1,7 @@
+---
+- name: transfer file from builder to prod
+  synchronize:
+    src: "{{ src_folder }}"
+    dest: "{{ dest_folder }}"
+    mode: push
+  delegate_to: "{{ delegate_server }}"

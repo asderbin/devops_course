@@ -1,0 +1,4 @@
+---
+src_folder: /srv/boxfuse-sample-java-war-hello/target/hello-1.0.war
+dest_folder: /var/lib/tomcat9/webapps
+delegate_server: 212.233.120.125
